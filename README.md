@@ -16,6 +16,8 @@
 conversation Context … tool-callcall_0 received more than one start Match (internal)
 ```
 
+这是 vLLM 的工具调用解析和 OpenAI 接口适配层造成的兼容性问题，而不是模型本身生成了重复的 OpenAI 工具调用 ID：模型生成的是工具调用文本（函数名、参数和标记），vLLM 解析后再组装 `tool_call.id`。其请求内编号会从 `call_0` 开始；编号器随请求重置，便会在跨轮对话中重复。DSH 将这个 ID 原样持久化，才导致历史中的同名 ID 冲突。
+
 ## 修复方式
 
 脚本会修补本机安装的 `@earendil-works/pi-ai` OpenAI Completions 适配器，为每个响应生成唯一前缀，例如：
@@ -44,4 +46,4 @@ dsh_mswogrud_pz76l04y_call_0
 
 - 已针对 `@deepseek-ai/dsh 0.1.0-rc.6` 验证。
 - 重装或升级 DSH 可能覆盖补丁；届时重新运行脚本即可。
-- 这是上游服务尚未生成全局唯一工具调用 ID 前的客户端兼容性修复。
+- 这是上游 vLLM 服务尚未生成跨请求全局唯一工具调用 ID 前的客户端兼容性修复；理想的上游修复应由 vLLM 输出全局唯一 ID。

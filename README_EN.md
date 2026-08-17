@@ -16,6 +16,8 @@ Some vLLM OpenAI-compatible tool-call responses reuse `call_0` on every request.
 conversation Context … tool-callcall_0 received more than one start Match (internal)
 ```
 
+This is a compatibility issue in vLLM's tool-call parsing and OpenAI API adaptation layer, not the model itself generating duplicate OpenAI tool-call IDs. The model generates tool-call text (function names, arguments, and markers); vLLM parses it and then assembles `tool_call.id`. Its per-request numbering starts at `call_0` and resets for the next request, so the ID repeats across turns. DSH persists that ID unchanged, which causes the collision in conversation history.
+
 ## Fix
 
 The script patches the locally installed `@earendil-works/pi-ai` OpenAI Completions adapter. It namespaces each response's tool-call IDs, for example:
@@ -44,4 +46,4 @@ The script first creates an `openai-completions.js.dsh-call-id.bak` backup. Exis
 
 - Tested against `@deepseek-ai/dsh 0.1.0-rc.6`.
 - Reinstalling or upgrading DSH may overwrite the patch; rerun the script afterward if needed.
-- This is a client-side compatibility workaround until the upstream server emits globally unique tool-call IDs.
+- This is a client-side compatibility workaround until upstream vLLM emits tool-call IDs that are globally unique across requests; the ideal upstream fix is for vLLM to generate those IDs.
