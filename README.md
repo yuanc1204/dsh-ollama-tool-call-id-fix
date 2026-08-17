@@ -10,7 +10,7 @@
 
 ## 问题
 
-部分 vLLM 工具调用响应（如千问3.8 27b）会在每个请求中重新使用 `call_0`。DSH 原样保存该 ID；当对话包含多次工具调用时，历史重载会失败：
+部分 vLLM 工具调用响应会在每个请求中重新使用 `call_0`。DSH 原样保存该 ID；当对话包含多次工具调用时，历史重载会失败：
 
 ```text
 conversation Context … tool-callcall_0 received more than one start Match (internal)
