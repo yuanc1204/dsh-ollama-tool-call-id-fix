@@ -19,7 +19,7 @@ $replacements = @(
         '            const pendingReasoningDetailsByToolCallId = new Map();',
         @'
             const pendingReasoningDetailsByToolCallId = new Map();
-            // vLLM may restart IDs such as "call_0" on every request. Persisted
+            // Ollama may repeat IDs such as "call_0" across requests. Persisted
             // conversations require IDs unique across requests; chunk matching
             // below continues to use the original upstream ID.
             const toolCallIdPrefix = `dsh_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;

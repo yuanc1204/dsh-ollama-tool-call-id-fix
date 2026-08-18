@@ -1,4 +1,4 @@
-# DSH + vLLM 工具调用 ID 修复
+# DSH + Ollama 工具调用 ID 修复
 
 [English](README_EN.md)
 
@@ -6,17 +6,17 @@
   <img src="assets/history-load-error.png" alt="工具调用 ID 重复导致的历史加载失败" width="1088">
 </p>
 
-> 修复 vLLM OpenAI-compatible 接口跨请求重复使用工具调用 ID（如 `call_0`）时，DeepSeek Harness 无法加载对话历史的问题。
+> 修复 Ollama OpenAI-compatible 接口跨请求重复使用工具调用 ID（如 `call_0`）时，DeepSeek Harness 无法加载对话历史的问题。
 
 ## 问题
 
-部分 vLLM 工具调用响应会在每个请求中重新使用 `call_0`。DSH 原样保存该 ID；当对话包含多次工具调用时，历史重载会失败：
+部分 Ollama OpenAI-compatible 工具调用响应会在每个请求中重新使用 `call_0`。DSH 原样保存该 ID；当对话包含多次工具调用时，历史重载会失败：
 
 ```text
 conversation Context … tool-callcall_0 received more than one start Match (internal)
 ```
 
-这是 vLLM 的工具调用解析和 OpenAI 接口适配层造成的兼容性问题，而不是模型本身生成了重复的 OpenAI 工具调用 ID：模型生成的是工具调用文本（函数名、参数和标记），vLLM 解析后再组装 `tool_call.id`。其请求内编号会从 `call_0` 开始；编号器随请求重置，便会在跨轮对话中重复。DSH 将这个 ID 原样持久化，才导致历史中的同名 ID 冲突。
+这是 Ollama 的工具调用解析和 OpenAI 接口适配层造成的兼容性问题，而不是模型本身生成了重复的 OpenAI 工具调用 ID：模型生成的是工具调用文本（函数名、参数和标记），Ollama 解析后再组装 `tool_call.id`。在受影响的接口路径或版本中，该 ID 会在请求间重复为 `call_0`；DSH 将它原样持久化，才导致历史中的同名 ID 冲突。
 
 ## 修复方式
 
@@ -35,7 +35,7 @@ dsh_mswogrud_pz76l04y_call_0
 
    ```powershell
    Set-ExecutionPolicy -Scope Process Bypass
-   .\patch-dsh-vllm-tool-call-ids.ps1
+   .\patch-dsh-ollama-tool-call-ids.ps1
    ```
 
 3. 重启 DeepSeek Harness，并新建对话测试连续工具调用。
@@ -46,4 +46,4 @@ dsh_mswogrud_pz76l04y_call_0
 
 - 已针对 `@deepseek-ai/dsh 0.1.0-rc.6` 验证。
 - 重装或升级 DSH 可能覆盖补丁；届时重新运行脚本即可。
-- 这是上游 vLLM 服务尚未生成跨请求全局唯一工具调用 ID 前的客户端兼容性修复；理想的上游修复应由 vLLM 输出全局唯一 ID。
+- 这是上游 Ollama 服务在受影响接口路径或版本中尚未生成跨请求全局唯一工具调用 ID 时的客户端兼容性修复；理想的上游修复应由 Ollama 输出全局唯一 ID。
