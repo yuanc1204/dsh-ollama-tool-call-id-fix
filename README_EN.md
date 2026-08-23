@@ -22,13 +22,13 @@ This is a compatibility issue in Ollama's tool-call parsing and OpenAI API adapt
 
 ## How the fix works
 
-The patch is applied to the locally installed `@earendil-works/pi-ai` OpenAI Completions adapter (`dist/api/openai-completions.js`). It namespaces each response's tool-call IDs with a per-boot prefix, for example:
+The patch is applied to the locally installed `@earendil-works/pi-ai` OpenAI Completions adapter (`dist/api/openai-completions.js`). It namespaces each response's tool-call IDs with a per-response prefix, for example:
 
 ```text
 dsh_mswogrud_pz76l04y_call_0
 ```
 
-The original ID is still used to correlate chunks within one streamed response, while persisted calls and tool results receive globally unique IDs. The prefix is generated at boot from a template literal, so it is inherently unique.
+The original ID is still used to correlate chunks within one streamed response. At the start of each response, a fresh timestamp-and-random prefix is generated for persisted calls and tool results, keeping their IDs unique across requests in normal use.
 
 ## Option 1 (recommended): DSH auto-patch plugin
 

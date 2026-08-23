@@ -15,7 +15,7 @@
 // Checks:
 //   1. ANCHORS  — each `old` anchor appears exactly once in the pristine file.
 //   2. FORWARD  — patching the pristine file reproduces the live adapter
-//                 byte-for-byte (modulo the generated per-boot prefix line).
+//                 byte-for-byte (modulo the generated per-response prefix line).
 //   3. SYNTAX   — patched output passes `node --check` (as ESM).
 //   4. IDEMPOTENT — the real apply() is a no-op on the live (patched) adapter.
 import { readFileSync, writeFileSync } from "node:fs";
@@ -27,7 +27,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const mod = await import(pathToFileURL(join(here, "lib", "index.js")).href);
-const { PATCHED_MARKER, REPLACEMENTS, apply, findAdapterFiles, patchFile } = mod;
+const { PATCHED_MARKER, REPLACEMENTS, adapterCandidatesForLauncher, apply, findAdapterFiles, patchFile } = mod;
 
 const sha = (s) => createHash("sha256").update(s, "utf8").digest("hex");
 const count = (haystack, needle) => haystack.split(needle).length - 1;
@@ -36,6 +36,15 @@ const ok = (cond, msg) => {
   console.log((cond ? "  ok   " : "  FAIL ") + msg);
   if (!cond) failures += 1;
 };
+
+// ---- verify hoisted dependency discovery ----
+const syntheticRoot = join(here, "fixture", "node_modules");
+const syntheticLauncher = join(syntheticRoot, "@deepseek-ai", "dsh");
+const expectedHoistedAdapter = join(syntheticRoot, "@earendil-works", "pi-ai", "dist", "api", "openai-completions.js");
+ok(
+  adapterCandidatesForLauncher(syntheticLauncher).includes(expectedHoistedAdapter),
+  "discovers pi-ai hoisted beside the @deepseek-ai scope"
+);
 
 // ---- discover the live adapter ----
 const liveFiles = findAdapterFiles();

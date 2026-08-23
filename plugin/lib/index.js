@@ -12,7 +12,7 @@
  *
  * This plugin re-applies a small, idempotent patch to the pi-ai adapter on
  * every DSH boot. The patch namespaces each response's tool-call IDs with a
- * per-boot prefix (e.g. `dsh_<ts36>_<rand>_call_0`). The original upstream
+ * per-response prefix (e.g. `dsh_<ts36>_<rand>_call_0`). The original upstream
  * ID is still used to correlate chunks within one streamed response; only
  * the ID that gets persisted is namespaced, so history reload works.
  *
@@ -163,16 +163,23 @@ function findLauncherDirs() {
   return [...found];
 }
 
+/** Return supported pi-ai adapter locations for one DSH launcher package. */
+export function adapterCandidatesForLauncher(launcher) {
+  return [
+    join(launcher, "node_modules", "@earendil-works", "pi-ai", "dist", "api", "openai-completions.js"),
+    join(launcher, "node_modules", "@deepseek-ai", "dsh-llm-pi-ai", "node_modules", "@earendil-works", "pi-ai", "dist", "api", "openai-completions.js"),
+    // npm/pnpm may hoist pi-ai beside the @deepseek-ai scope directory.
+    join(dirname(dirname(launcher)), "@earendil-works", "pi-ai", "dist", "api", "openai-completions.js"),
+  ];
+}
+
 /** For each launcher, yield the pi-ai openai-completions.js paths that exist. */
 export function findAdapterFiles() {
   const out = new Set();
   for (const launcher of findLauncherDirs()) {
-    const candidates = [
-      join(launcher, "node_modules", "@earendil-works", "pi-ai", "dist", "api", "openai-completions.js"),
-      join(launcher, "node_modules", "@deepseek-ai", "dsh-llm-pi-ai", "node_modules", "@earendil-works", "pi-ai", "dist", "api", "openai-completions.js"),
-      join(dirname(launcher), "node_modules", "@earendil-works", "pi-ai", "dist", "api", "openai-completions.js"),
-    ];
-    for (const c of candidates) if (existsSync(c)) out.add(c);
+    for (const candidate of adapterCandidatesForLauncher(launcher)) {
+      if (existsSync(candidate)) out.add(candidate);
+    }
   }
   return [...out];
 }

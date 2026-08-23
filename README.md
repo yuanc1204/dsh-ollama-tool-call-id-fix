@@ -28,7 +28,7 @@ conversation Context … tool-callcall_0 received more than one start Match (int
 dsh_mswogrud_pz76l04y_call_0
 ```
 
-原始 ID 仍用于同一响应流的分块匹配；写入会话历史和工具结果的 ID 则保持全局唯一。前缀在每次 DSH 启动时由模板字符串现场生成，因此天然唯一。
+原始 ID 仍用于同一响应流的分块匹配；写入会话历史和工具结果的 ID 则在每个响应开始处理时加上新生成的时间戳与随机前缀，从而在正常使用中保持跨请求唯一。
 
 ## 方案一（推荐）：DSH 自动补丁插件
 
