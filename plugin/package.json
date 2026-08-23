@@ -1,0 +1,30 @@
+{
+  "name": "dsh-ollama-call-id-auto",
+  "version": "0.1.0",
+  "description": "DSH boot-time auto-patcher for the pi-ai OpenAI-completions adapter: namespaces Ollama tool-call IDs so DSH can reload multi-tool-call conversations even after a DSH upgrade overwrites the patch.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "bundle",
+    "ollama",
+    "tool-call-id",
+    "pi-ai"
+  ],
+  "license": "MIT",
+  "files": [
+    "lib",
+    "cordis.patch.yml"
+  ]
+}

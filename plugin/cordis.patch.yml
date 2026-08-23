@@ -1,0 +1,9 @@
+# dsh-ollama-call-id-auto bundle patch.
+#
+# Registers the auto-patcher. The plugin's apply() runs at DSH boot and
+# re-applies the Ollama tool-call ID namespacing to the pi-ai
+# openai-completions adapter if a DSH upgrade / reinstall has reset it.
+# No client (web) surface: host-only side-effect plugin.
+- insert:
+    - id: ollama-call-id-auto
+      name: dsh-ollama-call-id-auto
